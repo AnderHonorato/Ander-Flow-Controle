@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UniPad.App.ViewModels"
+             xmlns:loc="clr-namespace:UniPad.App.Localization"
+             mc:Ignorable="d"
+             d:DesignWidth="900" d:DesignHeight="560"
+             x:Class="UniPad.App.Views.AdvancedView"
+             x:DataType="vm:AdvancedViewModel">
+
+  <!--
+    Two halves: global options and device-level settings on top, then the raw monitor. General sits
+    on the left; the right column stacks the two boxes that describe what UniPad emulates and what
+    it reads from. Everything about data folders, updates and maintenance lives on the About page
+    now, which keeps this page to things that change how input is handled.
+  -->
+  <Grid RowDefinitions="Auto,*" Margin="6">
+
+    <!-- ============ Options, drivers and keyboard/mouse ============ -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,*">
+
+      <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,3,0">
+
+        <HeaderedContentControl Classes="groupBox"
+                                Header="{Binding Text[nav.general], Source={x:Static loc:Strings.Instance}}">
+          <StackPanel Spacing="5">
+            <CheckBox IsChecked="{Binding OutputEnabled}"
+                      Content="{Binding Text[opt.outputEnabled], Source={x:Static loc:Strings.Instance}}" />
+            <CheckBox IsChecked="{Binding HidePhysicalControllers}"
+                      Content="{Binding Text[opt.hidePhysical], Source={x:Static loc:Strings.Instance}}" />
+            <CheckBox IsChecked="{Binding StartMinimizedToTray}"
+                      Content="{Binding Text[opt.startMinimized], Source={x:Static loc:Strings.Instance}}" />
+            <CheckBox IsChecked="{Binding MinimizeToTrayOnClose}"
+                      Content="{Binding Text[opt.minimizeOnClose], Source={x:Static loc:Strings.Instance}}" />
+            <CheckBox IsChecked="{Binding RunAtStartup}"
+                      Content="{Binding Text[opt.runAtStartup], Source={x:Static loc:Strings.Instance}}" />
+            <CheckBox IsChecked="{Binding VerboseLogging}"
+                      Content="{Binding Text[opt.verboseLogging], Source={x:Static loc:Strings.Instance}}" />
+
+            <!-- Labels are right-aligned against the pickers so the three rows read as a column. -->
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,6,0,0">
+              <TextBlock Grid.Row="0" Grid.Column="0" Classes="caption"
+                         HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,4"
+                         Text="{Binding Text[opt.pollRate], Source={x:Static loc:Strings.Instance}}" />
+              <ComboBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,4" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding PollRates}" SelectedItem="{Binding SelectedPollRate}" />
+
+              <TextBlock Grid.Row="1" Grid.Column="0" Classes="caption"
+                         HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,4"
+                         Text="{Binding Text[opt.theme], Source={x:Static loc:Strings.Instance}}" />
+              <ComboBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,4" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+
+              <TextBlock Grid.Row="2" Grid.Column="0" Classes="caption"
+                         HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"
+                         Text="{Binding Text[opt.language], Source={x:Static loc:Strings.Instance}}" />
+              <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" />
+            </Grid>
+          </StackPanel>
+        </HeaderedContentControl>
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Spacing="2" Margin="3,0,0,0">
+
+        <HeaderedContentControl Classes="groupBox"
+                                Header="{Binding Text[status.emulatedDevices], Source={x:Static loc:Strings.Instance}}">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding DriverStatus}" />
+            <Button IsVisible="{Binding IsDriverMissing}"
+                    Classes="accent"
+                    HorizontalAlignment="Left"
+                    Command="{Binding InstallViGEmCommand}"
+                    Content="{Binding Text[action.install], Source={x:Static loc:Strings.Instance}}" />
+
+            <Separator />
+
+            <TextBlock Classes="caption" TextWrapping="Wrap" Text="{Binding HidHideStatus}" />
+            <Button IsVisible="{Binding IsHidHideMissing}"
+                    HorizontalAlignment="Left"
+                    Command="{Binding InstallHidHideCommand}"
+                    Content="{Binding Text[action.install], Source={x:Static loc:Strings.Instance}}" />
+          </StackPanel>
+        </HeaderedContentControl>
+
+        <!--
+          Mouse look needs two numbers, not one: how far a given movement pushes the stick, and how
+          quickly the stick falls back to centre once the mouse stops. Both are shown with their
+          current value next to the caption, because a bare slider tells the user nothing.
+
+          Only the sliders are pinned to left-to-right: minimum has to stay on the left because the
+          track is a magnitude, not text. The captions keep the direction of the active language,
+          which the surrounding page already provides.
+        -->
+        <HeaderedContentControl Classes="groupBox"
+                                Header="{Binding Text[group.keyboardMouse], Source={x:Static loc:Strings.Instance}}">
+          <StackPanel Spacing="4">
+            <CheckBox IsChecked="{Binding KeyboardMouseEnabled}"
+                      Content="{Binding Text[opt.keyboardMouseEnabled], Source={x:Static loc:Strings.Instance}}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
+              <TextBlock Classes="caption"
+                         Text="{Binding Text[opt.mouseSensitivity], Source={x:Static loc:Strings.Instance}}" />
+              <TextBlock Classes="caption" Text=":" />
+              <TextBlock Classes="caption" Text="{Binding MouseSensitivityText}" />
+            </StackPanel>
+            <Slider Minimum="0.1" Maximum="5" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                    FlowDirection="LeftToRight"
+                    IsEnabled="{Binding KeyboardMouseEnabled}"
+                    Value="{Binding MouseSensitivity}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Classes="caption"
+                         Text="{Binding Text[opt.mouseReturnSpeed], Source={x:Static loc:Strings.Instance}}" />
+              <TextBlock Classes="caption" Text=":" />
+              <TextBlock Classes="caption" Text="{Binding MouseReturnSpeedText}" />
+            </StackPanel>
+            <Slider Minimum="0.02" Maximum="0.4" TickFrequency="0.01" IsSnapToTickEnabled="True"
+                    FlowDirection="LeftToRight"
+                    IsEnabled="{Binding KeyboardMouseEnabled}"
+                    Value="{Binding MouseReturnSpeed}" />
+
+            <CheckBox IsEnabled="{Binding KeyboardMouseEnabled}"
+                      IsChecked="{Binding MouseInvertY}"
+                      Content="{Binding Text[opt.mouseInvertY], Source={x:Static loc:Strings.Instance}}" />
+
+            <TextBlock Classes="caption" TextWrapping="Wrap"
+                       Foreground="{DynamicResource WarningBrush}"
+                       Text="{Binding Text[msg.keyboardPassthrough], Source={x:Static loc:Strings.Instance}}" />
+          </StackPanel>
+        </HeaderedContentControl>
+      </StackPanel>
+    </Grid>
+
+    <!-- ============ Raw device monitor ============ -->
+    <HeaderedContentControl Grid.Row="1" Classes="groupBox" Margin="0,2,0,0"
+                            Header="{Binding Text[status.controllers], Source={x:Static loc:Strings.Instance}}">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding DeviceRows}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:DeviceDiagnosticsRow">
+              <Border Classes="banner deviceRow" Classes.assigned="{Binding HasPlayer}" Margin="0,0,0,3">
+                <Grid ColumnDefinitions="Auto,*">
+                  <!-- Number of the player that owns this device, in the player's colour like the
+                       current slot number on the config page. The Auto column collapses together
+                       with the badge, so unassigned rows keep the full width for their details. -->
+                  <TextBlock Grid.Column="0" FontWeight="SemiBold"
+                             VerticalAlignment="Top" Margin="0,0,10,0"
+                             IsVisible="{Binding HasPlayer}"
+                             Foreground="{Binding PlayerBrush}"
+                             Text="{Binding PlayerText}" />
+
+                  <StackPanel Grid.Column="1" Spacing="1">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="caption" Text="{Binding Identifier}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="caption" Text="{Binding Capabilities}" />
+                    <TextBlock Classes="mono" Text="{Binding AxisValues}" TextWrapping="Wrap" />
+                    <TextBlock Classes="mono" Text="{Binding ButtonValues}" TextWrapping="Wrap" />
+                    <TextBlock Classes="mono" Text="{Binding HatValues}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </HeaderedContentControl>
+  </Grid>
+</UserControl>

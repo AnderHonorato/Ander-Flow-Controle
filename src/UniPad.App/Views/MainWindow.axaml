@@ -1,0 +1,148 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:UniPad.App.ViewModels"
+        xmlns:views="clr-namespace:UniPad.App.Views"
+        xmlns:loc="clr-namespace:UniPad.App.Localization"
+        mc:Ignorable="d"
+        d:DesignWidth="1024" d:DesignHeight="660"
+        x:Class="UniPad.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Text[app.title], Source={x:Static loc:Strings.Instance}}"
+        Icon="/Assets/tray.png"
+        Width="1024" Height="660"
+        MinWidth="1024" MinHeight="640"
+        WindowStartupLocation="CenterScreen">
+
+  <!--
+    Overall shape follows yuzu's configuration dialog: a narrow category sidebar on the left, the
+    tabbed content area on the right, then a status strip and an action row along the bottom.
+  -->
+  <Grid RowDefinitions="Auto,*,Auto,Auto">
+
+    <!-- ============ Warning banners ============ -->
+    <StackPanel Grid.Row="0" Spacing="4" Margin="8,8,8,0">
+      <Border Classes="banner" IsVisible="{Binding ShowDriverBanner}"
+              BorderBrush="{DynamicResource DangerBrush}">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" TextWrapping="Wrap" Text="{Binding DriverBannerText}" />
+          <Button Grid.Column="1" Classes="accent"
+                  Command="{Binding Advanced.InstallViGEmCommand}"
+                  Content="{Binding Text[action.install], Source={x:Static loc:Strings.Instance}}" />
+        </Grid>
+      </Border>
+
+      <Border Classes="banner" IsVisible="{Binding ShowHidHideBanner}">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <TextBlock Grid.Column="0" TextWrapping="Wrap"
+                     Text="{Binding Text[status.hidhideMissing], Source={x:Static loc:Strings.Instance}}" />
+          <Button Grid.Column="1"
+                  Command="{Binding Advanced.InstallHidHideCommand}"
+                  Content="{Binding Text[action.install], Source={x:Static loc:Strings.Instance}}"
+                  Margin="0,0,4,0" />
+          <Button Grid.Column="2"
+                  Command="{Binding DismissHidHideBannerCommand}"
+                  Content="{Binding Text[action.dismiss], Source={x:Static loc:Strings.Instance}}" />
+        </Grid>
+      </Border>
+    </StackPanel>
+
+    <!-- ============ Sidebar + tabs ============ -->
+    <!--
+      A single row: the sidebar, the TabControl and the two category frames all fill it, so every
+      box starts and ends on the same line no matter which category is selected. The TabControl
+      draws its own strip and frame internally, which is why no header-height offset is needed here.
+    -->
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="8">
+
+      <ListBox Grid.Column="0" Classes="sidebar" Width="92" Margin="0,0,6,.5"
+               SelectedIndex="{Binding SelectedCategoryIndex}">
+        <ListBoxItem Content="{Binding Text[nav.controls], Source={x:Static loc:Strings.Instance}}" />
+        <ListBoxItem Content="{Binding Text[nav.phones], Source={x:Static loc:Strings.Instance}}" />
+        <ListBoxItem Content="{Binding Text[tab.advanced], Source={x:Static loc:Strings.Instance}}" />
+        <ListBoxItem Content="{Binding Text[nav.about], Source={x:Static loc:Strings.Instance}}" />
+      </ListBox>
+
+      <!-- Controls category: the eight player tabs. -->
+      <TabControl Grid.Column="1"
+                  IsVisible="{Binding IsControlsCategory}"
+                  SelectedIndex="{Binding SelectedTabIndex}"
+                  ItemsSource="{Binding AllTabs}">
+        <TabControl.ItemTemplate>
+          <DataTemplate DataType="vm:TabDescriptor">
+            <TextBlock Text="{Binding Header}" Foreground="{Binding Brush}" />
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate DataType="vm:TabDescriptor">
+            <ContentControl Content="{Binding Content}" />
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+
+      <!-- Phones: QR code and connected phones, framed like Advanced and About. -->
+      <Border Grid.Column="1" Classes="categoryFrame" Margin="0,0,0,.5"
+              IsVisible="{Binding IsPhonesCategory}">
+        <ContentControl Content="{Binding Phones}" />
+      </Border>
+
+      <!-- Advanced and About: plain framed panels, no tab header of their own. -->
+      <Border Grid.Column="1" Classes="categoryFrame" Margin="0,0,0,.5"
+              IsVisible="{Binding IsAdvancedCategory}">
+        <ContentControl Content="{Binding Advanced}" />
+      </Border>
+
+      <Border Grid.Column="1" Classes="categoryFrame" Margin="0,0,0,.5"
+              IsVisible="{Binding IsAboutCategory}">
+        <ContentControl Content="{Binding About}" />
+      </Border>
+    </Grid>
+
+    <!-- ============ Status strip ============ -->
+    <!--
+      The right-hand half of the strip belongs to whichever category is selected. Controls and
+      About get the summary - how many sources are connected, how many pads are live - because that
+      is what those pages are about. Advanced gets the diagnostics reading instead, and only while
+      it is selected: the reading is refreshed by the UI timer while that page is visible, so shown
+      anywhere else it would be a measurement that has quietly stopped being taken. It used to be
+      shown everywhere, which meant it was blank until the page was first opened and then froze at
+      its last value for the rest of the session.
+    -->
+    <Border Grid.Row="2" Classes="statusBar">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock Grid.Column="0" Classes="caption" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" Classes="caption" Margin="12,0"
+                   IsVisible="{Binding !IsAdvancedCategory}"
+                   Text="{Binding ConnectedSummary}" />
+        <TextBlock Grid.Column="2" Classes="caption" Margin="12,0"
+                   IsVisible="{Binding IsAdvancedCategory}"
+                   Text="{Binding Advanced.PollStatistics}" />
+      </Grid>
+    </Border>
+
+    <!-- ============ Action row ============ -->
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="8">
+      <Button Grid.Column="0" Classes="accent"
+              Command="{Binding AutoDetectAllCommand}"
+              Content="{Binding Text[action.autoDetectAll], Source={x:Static loc:Strings.Instance}}"
+              Margin="0,0,4,0" />
+      <Button Grid.Column="1"
+              Command="{Binding ClearAllCommand}"
+              Content="{Binding Text[action.clearAll], Source={x:Static loc:Strings.Instance}}" Margin="0,0,4,0" />
+
+      <Button Grid.Column="3" Classes="accent"
+              Command="{Binding OkCommand}"
+              Content="{Binding Text[action.ok], Source={x:Static loc:Strings.Instance}}"
+              MinWidth="72" Margin="0,0,4,0" />
+      <Button Grid.Column="4"
+              Command="{Binding ApplyCommand}"
+              Content="{Binding Text[action.apply], Source={x:Static loc:Strings.Instance}}"
+              MinWidth="72" Margin="0,0,4,0" />
+      <Button Grid.Column="5"
+              Command="{Binding CancelCommand}"
+              Content="{Binding Text[action.cancel], Source={x:Static loc:Strings.Instance}}"
+              MinWidth="72" />
+    </Grid>
+  </Grid>
+</Window>

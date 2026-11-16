@@ -1,0 +1,47 @@
+name: Publicar Ander Flow Controle para Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.100'
+      - name: Compilar o executável portátil
+        shell: pwsh
+        run: |
+          dotnet publish src/UniPad.App/UniPad.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o dist/pacote/Windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Montar o ZIP
+        shell: pwsh
+        run: |
+          Copy-Item Instalacao.html, README.md, LICENSE, THIRD-PARTY-NOTICES.md -Destination dist/pacote
+          git archive --format=zip --output=dist/fontes.zip HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Expand-Archive dist/fontes.zip -DestinationPath dist/pacote/Codigo-fonte
+          Compress-Archive -Path dist/pacote/* -DestinationPath dist/AnderFlowControle-0.1.0-Windows.zip
+          if (!(Test-Path dist/pacote/Windows/AnderFlowControle.exe)) { throw "Executável ausente." }
+      - name: Publicar a versão 0.1.0
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $pacote = 'dist/AnderFlowControle-0.1.0-Windows.zip'
+          gh release view v0.1.0 *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload v0.1.0 $pacote
+          } else {
+            gh release create v0.1.0 $pacote --target "$env:GITHUB_SHA" --title "Ander Flow Controle 0.1.0" --notes "Versão portátil para Windows 10/11 de 64 bits. O pacote inclui guia de instalação e código-fonte. Compatibilidade com controle virtual ainda não verificada em jogo no Windows."
+          }
+          exit $LASTEXITCODE

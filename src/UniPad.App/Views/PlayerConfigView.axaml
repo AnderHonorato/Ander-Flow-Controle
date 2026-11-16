@@ -1,0 +1,585 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UniPad.App.ViewModels"
+             xmlns:ctl="clr-namespace:UniPad.App.Views.Controls"
+             xmlns:loc="clr-namespace:UniPad.App.Localization"
+             mc:Ignorable="d"
+             d:DesignWidth="900" d:DesignHeight="560"
+             x:Class="UniPad.App.Views.PlayerConfigView"
+             x:DataType="vm:PlayerConfigViewModel"
+             FlowDirection="LeftToRight">
+
+  <!--
+    Header row with the device and output pickers, then a body laid out as a shoulder and system
+    strip across the top and three columns beneath it: left stick and D-Pad on the left, the live
+    diagram in the middle, face buttons and the right stick on the right. Options and actions share
+    the final row.
+
+    Every group box in a side column repeats the same "26,*,26,*" column scheme: a fixed-width
+    label cell followed by a stretching bind cell, twice over. Because the widths are fixed rather
+    than content-sized, the bind buttons of Shoulders, Face Buttons, the stick groups and the D-Pad
+    all land on the same two vertical lines even though they live in separate boxes.
+
+    Every caption that names a binding carries the groupLabel class, whichever side of its button
+    it sits on, so the whole panel reads at one weight: the captions are secondary text and the
+    hardware names on the buttons are what the eye should land on. The class also centres what it
+    styles, which suits the captions stacked above the stick buttons but not the ones sharing a row
+    with their button - those sit in a 26-pixel cell and are wider than it, so centring would drag
+    them leftwards out of the cell. They pin themselves to the left to opt out of it.
+
+    Direction is decided per row rather than for the panel as a whole. The panel is pinned to
+    left-to-right because the body describes physical hardware: the left stick is on the left of a
+    real pad whatever language the interface is in, so mirroring the diagram and the label/bind
+    columns makes the panel read as a different device. The header and the action row carry no such
+    meaning - they are ordinary form rows - so they follow the language and mirror in Persian.
+  -->
+
+  <!--
+    The small round clear button that sits on the top-left corner of every binding group. Scoped
+    to this view on purpose, so the application-wide button styles and the group box template stay
+    untouched. The template has no ContentPresenter, which also keeps the global
+    "Button:pointerover /template/ ContentPresenter" rules from reaching it.
+
+    Each group box is wrapped in a Panel together with its clear button. The button is declared
+    after the box so it draws on top of the frame.
+  -->
+  <UserControl.Styles>
+    <Style Selector="Button.groupClear">
+      <Setter Property="Width" Value="10" />
+      <Setter Property="Height" Value="10" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <!-- Group boxes carry a 3px margin and their frame starts 8px down, so this lands the
+           circle on the frame's top-left corner. -->
+      <Setter Property="Margin" Value="5,13,0,0" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel>
+            <Ellipse Name="PART_Circle" />
+            <Path Name="PART_Glyph"
+                  Data="M0,0 L5,5 M5,0 L0,5"
+                  StrokeThickness="1.6"
+                  StrokeLineCap="Round"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center" />
+          </Panel>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+
+    <Style Selector="Button.groupClear /template/ Ellipse#PART_Circle">
+      <Setter Property="Fill" Value="{DynamicResource BorderStrongBrush}" />
+    </Style>
+    <Style Selector="Button.groupClear /template/ Path#PART_Glyph">
+      <Setter Property="Stroke" Value="{DynamicResource InputBackgroundBrush}" />
+    </Style>
+
+    <Style Selector="Button.groupClear:pointerover /template/ Ellipse#PART_Circle">
+      <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.groupClear:pressed /template/ Ellipse#PART_Circle">
+      <Setter Property="Fill" Value="{DynamicResource AccentPressedBrush}" />
+    </Style>
+    
+    <!-- Player strip: one clickable button per player. Square in the player's colour, filled while
+         its pad is live; number dimmed, or in the player's colour for the tab being shown. -->
+    <Style Selector="Button.playerSlot">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="3,2" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.playerSlot:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource TabSelectedBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+    <Style Selector="Button.playerSlot:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+    </Style>
+
+    <Style Selector="Border.slotBox">
+      <Setter Property="Width" Value="12" />
+      <Setter Property="Height" Value="12" />
+      <Setter Property="CornerRadius" Value="1" />
+      <Setter Property="BorderThickness" Value="1.2" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.playerSlot:pointerover Border.slotBox">
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <Style Selector="TextBlock.slotNumber">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.playerSlot:pointerover TextBlock.slotNumber">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <!-- Declared last so the current number keeps its colour under the pointer too. -->
+    <Style Selector="Button.playerSlot.current TextBlock.slotNumber" x:DataType="vm:PlayerSlotIndicator">
+      <Setter Property="Foreground" Value="{Binding Brush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- Every group box on the page - the header row (device, profile, output type) included -
+         is framed in this player's colour. -->
+    <Style Selector="HeaderedContentControl.groupBox" x:DataType="vm:PlayerConfigViewModel">
+      <Setter Property="BorderBrush" Value="{Binding PlayerBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="6">
+
+    <!-- ============ Header: connect toggle, device, profile, output type ============ -->
+    <!--
+      Mirrored with the language: the connect toggle moves to the right edge, the output type to
+      the left. Only the direction is bound, so the columns keep their own order and nothing has to
+      be rewritten per language.
+    -->
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,3*,4*,Auto" Margin="0,0,0,6"
+          FlowDirection="{Binding TextFlowDirection, Source={x:Static loc:Strings.Instance}}">
+      <CheckBox Grid.Column="0"
+                IsChecked="{Binding IsEnabled}"
+                Content="{Binding Text[player.connect], Source={x:Static loc:Strings.Instance}}"
+                Margin="2,0,12,0" />
+
+      <HeaderedContentControl Grid.Column="1"
+                              Classes="groupBox"
+                              Header="{Binding Text[player.inputDevice], Source={x:Static loc:Strings.Instance}}">
+        <Grid ColumnDefinitions="*,Auto">
+          <!--
+            The list itself stays left-to-right. Device names come from the driver and are Latin,
+            and a right-to-left base direction leaves the closing bracket of "Twin USB Joystick (0)"
+            as a trailing neutral, which the bidirectional algorithm resolves to the paragraph
+            direction and moves to the far side of the name.
+          -->
+          <ComboBox Grid.Column="0"
+                    FlowDirection="LeftToRight"
+                    ItemsSource="{Binding Devices}"
+                    SelectedItem="{Binding SelectedDevice}"
+                    HorizontalAlignment="Stretch" />
+          <Button Grid.Column="1"
+                  Command="{Binding RefreshCommand}"
+                  Content="{Binding Text[action.refresh], Source={x:Static loc:Strings.Instance}}"
+                  Margin="4,0,0,0" />
+        </Grid>
+      </HeaderedContentControl>
+
+      <!-- Per-player profiles. The list is shared by every player tab. -->
+      <HeaderedContentControl Grid.Column="2"
+                              Classes="groupBox"
+                              Header="{Binding Text[player.profile], Source={x:Static loc:Strings.Instance}}">
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+          <ComboBox Grid.Column="0"
+                    ItemsSource="{Binding ProfileOptions}"
+                    SelectedItem="{Binding SelectedProfileOption}"
+                    HorizontalAlignment="Stretch"
+                    MinWidth="150" />
+          <Button Grid.Column="1"
+                  Command="{Binding SaveProfileCommand}"
+                  Content="{Binding Text[action.save], Source={x:Static loc:Strings.Instance}}"
+                  Margin="4,0,0,0" />
+          <Button Grid.Column="2"
+                  Command="{Binding NewProfileCommand}"
+                  Content="{Binding Text[action.new], Source={x:Static loc:Strings.Instance}}"
+                  Margin="4,0,0,0" />
+          <Button Grid.Column="3"
+                  Command="{Binding DeleteProfileCommand}"
+                  Content="{Binding Text[action.delete], Source={x:Static loc:Strings.Instance}}"
+                  Margin="4,0,0,0" />
+        </Grid>
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Column="3"
+                              Classes="groupBox"
+                              Header="{Binding Text[player.controllerType], Source={x:Static loc:Strings.Instance}}">
+        <!-- Xbox360 and DualShock4 are product names, not translated text: kept left-to-right. -->
+        <ComboBox FlowDirection="LeftToRight"
+                  ItemsSource="{Binding OutputTypes}"
+                  SelectedItem="{Binding OutputType}"
+                  MinWidth="120" />
+      </HeaderedContentControl>
+    </Grid>
+
+    <!-- ============ Body: shoulder strip, then sticks | diagram | buttons ============ -->
+    <Grid Grid.Row="1" ColumnDefinitions="228,*,228" RowDefinitions="Auto,*">
+
+      <Grid.Styles>
+        <!--
+          Scoped to the body on purpose. The columns here stay left to right, but each text leaf
+          takes the base direction of the active language: with a left-to-right base direction the
+          zero-width non-joiner inside Persian words resolves as a neutral boundary, which splits a
+          word into separate runs and lays them out backwards. Alignment is forced to the left so
+          the captions keep the positions the column scheme gives them.
+
+          The header and action rows are outside this scope. They inherit their direction from the
+          row instead, which lets the pickers there opt out with a plain FlowDirection of their own.
+        -->
+        <Style Selector="TextBlock">
+          <Setter Property="FlowDirection" Value="{Binding TextFlowDirection, Source={x:Static loc:Strings.Instance}}" />
+          <Setter Property="TextAlignment" Value="Left" />
+        </Style>
+      </Grid.Styles>
+
+      <!--
+        Top strip. All three boxes sit in the same Auto row and stretch vertically, so the row
+        takes the height of the tallest one and the other two grow to match it. Their inner grids
+        carry identical margins, which is what keeps the bind buttons on one line across the strip.
+      -->
+      <Panel Grid.Row="0" Grid.Column="0">
+        <HeaderedContentControl Classes="groupBox"
+                                VerticalAlignment="Stretch"
+                                Header="{Binding Text[group.shouldersL], Source={x:Static loc:Strings.Instance}}">
+          <Grid ColumnDefinitions="26,*,26,*" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left"
+                       Text="LB" Margin="2,0,4,0" />
+            <ContentControl Grid.Column="1" Content="{Binding BindLeftBumper}" Margin="1" />
+            <TextBlock Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left"
+                       Text="LT" Margin="6,0,4,0" />
+            <ContentControl Grid.Column="3" Content="{Binding BindLeftTrigger}" Margin="1" />
+          </Grid>
+        </HeaderedContentControl>
+        <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="ShoulderL"
+                ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+      </Panel>
+
+      <Panel Grid.Row="0" Grid.Column="1">
+        <HeaderedContentControl Classes="groupBox" MinHeight="45"
+                                VerticalAlignment="Stretch"
+                                Header="{Binding Text[group.misc], Source={x:Static loc:Strings.Instance}}">
+          <!-- Label cells are content-sized here rather than fixed at 34/40/34: the Persian captions
+               are wider than the English ones, and this box shares its column scheme with no other,
+               so nothing drifts out of alignment by letting them size themselves. -->
+          <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left" Margin="2,0,4,0"
+                       Text="{Binding Text[bind.back], Source={x:Static loc:Strings.Instance}}" />
+            <ContentControl Grid.Column="1" Content="{Binding BindBack}" Margin="1" />
+            <TextBlock Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left" Margin="8,0,4,0"
+                       Text="{Binding Text[bind.guide], Source={x:Static loc:Strings.Instance}}" />
+            <ContentControl Grid.Column="3" Content="{Binding BindGuide}" Margin="1" />
+            <TextBlock Grid.Column="4" Classes="groupLabel" HorizontalAlignment="Left" Margin="8,0,4,0"
+                       Text="{Binding Text[bind.start], Source={x:Static loc:Strings.Instance}}" />
+            <ContentControl Grid.Column="5" Content="{Binding BindStart}" Margin="1" />
+          </Grid>
+        </HeaderedContentControl>
+        <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="Misc"
+                ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+      </Panel>
+
+      <Panel Grid.Row="0" Grid.Column="2">
+        <HeaderedContentControl Classes="groupBox"
+                                VerticalAlignment="Stretch"
+                                Header="{Binding Text[group.shouldersR], Source={x:Static loc:Strings.Instance}}">
+          <Grid ColumnDefinitions="26,*,26,*" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left"
+                       Text="RB" Margin="2,0,4,0" />
+            <ContentControl Grid.Column="1" Content="{Binding BindRightBumper}" Margin="1" />
+            <TextBlock Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left"
+                       Text="RT" Margin="6,0,4,0" />
+            <ContentControl Grid.Column="3" Content="{Binding BindRightTrigger}" Margin="1" />
+          </Grid>
+        </HeaderedContentControl>
+        <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="ShoulderR"
+                ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+      </Panel>
+
+      <!-- ==== Left column: left stick, then the D-Pad ==== -->
+      <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+        <StackPanel Spacing="2">
+
+          <Panel>
+            <HeaderedContentControl Classes="groupBox"
+                                    Header="{Binding Text[group.leftStick], Source={x:Static loc:Strings.Instance}}">
+              <StackPanel Spacing="3">
+                <!-- Labels sit above their bind cells, but in the same two stretching columns the
+                     shoulder box uses, so nothing drifts sideways between the boxes. -->
+                <Grid ColumnDefinitions="26,*,26,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                  <TextBlock Grid.Row="0" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.up], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="0" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.down], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding BindLStickUp}" Margin="1" />
+                  <ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding BindLStickDown}" Margin="1" />
+
+                  <TextBlock Grid.Row="2" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.left], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="2" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.right], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="3" Grid.Column="1" Content="{Binding BindLStickLeft}" Margin="1" />
+                  <ContentControl Grid.Row="3" Grid.Column="3" Content="{Binding BindLStickRight}" Margin="1" />
+
+                  <TextBlock Grid.Row="4" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.pressed], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="4" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.modifier], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="5" Grid.Column="1" Content="{Binding BindLStickPress}" Margin="1" />
+                  <ContentControl Grid.Row="5" Grid.Column="3" Content="{Binding BindLStickModifier}" Margin="1" />
+                </Grid>
+
+                <!-- Label and value come from the view model as one string: separate runs are
+                     reordered independently, which separated the per cent sign from its digits. -->
+                <StackPanel Spacing="1">
+                  <TextBlock Classes="caption" HorizontalAlignment="Left"
+                             Text="{Binding LeftDeadzoneText}" />
+                  <Slider Minimum="0" Maximum="0.5" SmallChange="0.01" LargeChange="0.05"
+                          Value="{Binding LeftDeadzone}" />
+
+                  <TextBlock Classes="caption" HorizontalAlignment="Left"
+                             Text="{Binding LeftRangeText}" />
+                  <Slider Minimum="0.5" Maximum="1.5" SmallChange="0.01" LargeChange="0.05"
+                          Value="{Binding LeftRange}" />
+                </StackPanel>
+              </StackPanel>
+            </HeaderedContentControl>
+            <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="LeftStick"
+                    ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+          </Panel>
+
+          <Panel>
+            <HeaderedContentControl Classes="groupBox"
+                                    Header="{Binding Text[group.dpad], Source={x:Static loc:Strings.Instance}}">
+              <Grid ColumnDefinitions="26,*,26,*" RowDefinitions="Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left" Margin="2,0,4,0"
+                           Text="{Binding Text[bind.left], Source={x:Static loc:Strings.Instance}}" />
+                <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding BindDPadLeft}" Margin="1" />
+                <TextBlock Grid.Row="0" Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left" Margin="6,0,4,0"
+                           Text="{Binding Text[bind.up], Source={x:Static loc:Strings.Instance}}" />
+                <ContentControl Grid.Row="0" Grid.Column="3" Content="{Binding BindDPadUp}" Margin="1" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left" Margin="2,0,4,0"
+                           Text="{Binding Text[bind.down], Source={x:Static loc:Strings.Instance}}" />
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding BindDPadDown}" Margin="1" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left" Margin="6,0,4,0"
+                           Text="{Binding Text[bind.right], Source={x:Static loc:Strings.Instance}}" />
+                <ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding BindDPadRight}" Margin="1" />
+              </Grid>
+            </HeaderedContentControl>
+            <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="DPad"
+                    ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+          </Panel>
+
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- ==== Middle column: diagram, stick dots, device summary ==== -->
+      <!-- Clipped because nothing else in this column can be: the preview is a plain Control and
+           draws whatever geometry it is given, and the group boxes in the row above are declared
+           earlier, so an overflowing diagram lands on top of their captions rather than behind
+           them. -->
+      <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="*,Auto,Auto,Auto" Margin="4,2,4,0"
+            ClipToBounds="True">
+
+        <!-- The floor is low on purpose. A minimum the row cannot honour does not shrink the
+             layout, it just makes the control overflow its cell: Avalonia clamps the arranged
+             size up to MinHeight whatever the grid offered. The artwork is vector and stays
+             legible when it is small, so it is allowed to shrink instead. -->
+        <ctl:ControllerPreview Grid.Row="0"
+                               x:Name="PART_ControllerPreview"
+                               MinHeight="120"
+                               BodyBrush="{DynamicResource ControllerBodyBrush}"
+                               DetailBrush="{DynamicResource ControllerDetailBrush}"
+                               HighlightBrush="#FF8C1A"
+                               OutlineBrush="{DynamicResource BorderStrongBrush}" />
+
+        <!-- Stick position dots with live dead zone rings. -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,*" Margin="0,4">
+          <StackPanel Grid.Column="1" Spacing="2" Margin="6,0">
+            <ctl:AnalogStickPreview Width="86" Height="86"
+                                    ValueX="{Binding LeftStickX}"
+                                    ValueY="{Binding LeftStickY}"
+                                    Deadzone="{Binding LeftDeadzone}"
+                                    Range="{Binding LeftRange}"
+                                    DotBrush="{DynamicResource AccentBrush}"
+                                    OutlineBrush="{DynamicResource BorderStrongBrush}" />
+            <TextBlock Classes="caption" HorizontalAlignment="Center"
+                       Text="{Binding Text[group.leftStick], Source={x:Static loc:Strings.Instance}}" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="2" Spacing="2" Margin="6,0">
+            <ctl:AnalogStickPreview Width="86" Height="86"
+                                    ValueX="{Binding RightStickX}"
+                                    ValueY="{Binding RightStickY}"
+                                    Deadzone="{Binding RightDeadzone}"
+                                    Range="{Binding RightRange}"
+                                    DotBrush="{DynamicResource AccentBrush}"
+                                    OutlineBrush="{DynamicResource BorderStrongBrush}" />
+            <TextBlock Classes="caption" HorizontalAlignment="Center"
+                       Text="{Binding Text[group.rightStick], Source={x:Static loc:Strings.Instance}}" />
+          </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6"
+                    HorizontalAlignment="Center" Margin="0,0,0,2">
+          <TextBlock Classes="caption" Text="{Binding DeviceStatus}" />
+          <TextBlock Classes="caption" Text="{Binding SlotStatus}"
+                     Foreground="{DynamicResource AccentBrush}" />
+        </StackPanel>
+      </Grid>
+
+      <!-- ==== Right column: face buttons, then the right stick ==== -->
+      <ScrollViewer Grid.Row="1" Grid.Column="2" VerticalScrollBarVisibility="Auto" Margin="0,2,0,0">
+        <StackPanel Spacing="2">
+
+          <Panel>
+            <HeaderedContentControl Classes="groupBox"
+                                    Header="{Binding Text[group.faceButtons], Source={x:Static loc:Strings.Instance}}">
+              <Grid ColumnDefinitions="26,*,26,*" RowDefinitions="Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left"
+                           Text="X" Margin="2,0,4,0" />
+                <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding BindX}" Margin="1" />
+                <TextBlock Grid.Row="0" Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left"
+                           Text="A" Margin="6,0,4,0" />
+                <ContentControl Grid.Row="0" Grid.Column="3" Content="{Binding BindA}" Margin="1" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Classes="groupLabel" HorizontalAlignment="Left"
+                           Text="Y" Margin="2,0,4,0" />
+                <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding BindY}" Margin="1" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Classes="groupLabel" HorizontalAlignment="Left"
+                           Text="B" Margin="6,0,4,0" />
+                <ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding BindB}" Margin="1" />
+              </Grid>
+            </HeaderedContentControl>
+            <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="FaceButtons"
+                    ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+          </Panel>
+
+          <Panel>
+            <HeaderedContentControl Classes="groupBox"
+                                    Header="{Binding Text[group.rightStick], Source={x:Static loc:Strings.Instance}}">
+              <StackPanel Spacing="3">
+                <Grid ColumnDefinitions="26,*,26,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                  <TextBlock Grid.Row="0" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.up], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="0" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.down], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding BindRStickUp}" Margin="1" />
+                  <ContentControl Grid.Row="1" Grid.Column="3" Content="{Binding BindRStickDown}" Margin="1" />
+
+                  <TextBlock Grid.Row="2" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.left], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="2" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.right], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="3" Grid.Column="1" Content="{Binding BindRStickLeft}" Margin="1" />
+                  <ContentControl Grid.Row="3" Grid.Column="3" Content="{Binding BindRStickRight}" Margin="1" />
+
+                  <TextBlock Grid.Row="4" Grid.Column="1" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.pressed], Source={x:Static loc:Strings.Instance}}" />
+                  <TextBlock Grid.Row="4" Grid.Column="3" Classes="groupLabel" HorizontalAlignment="Center"
+                             Text="{Binding Text[bind.modifier], Source={x:Static loc:Strings.Instance}}" />
+                  <ContentControl Grid.Row="5" Grid.Column="1" Content="{Binding BindRStickPress}" Margin="1" />
+                  <ContentControl Grid.Row="5" Grid.Column="3" Content="{Binding BindRStickModifier}" Margin="1" />
+                </Grid>
+
+                <StackPanel Spacing="1">
+                  <TextBlock Classes="caption" HorizontalAlignment="Left"
+                             Text="{Binding RightDeadzoneText}" />
+                  <Slider Minimum="0" Maximum="0.5" SmallChange="0.01" LargeChange="0.05"
+                          Value="{Binding RightDeadzone}" />
+
+                  <TextBlock Classes="caption" HorizontalAlignment="Left"
+                             Text="{Binding RightRangeText}" />
+                  <Slider Minimum="0.5" Maximum="1.5" SmallChange="0.01" LargeChange="0.05"
+                          Value="{Binding RightRange}" />
+                </StackPanel>
+              </StackPanel>
+            </HeaderedContentControl>
+            <Button Classes="groupClear" Command="{Binding ClearGroupCommand}" CommandParameter="RightStick"
+                    ToolTip.Tip="{Binding Text[group.clear], Source={x:Static loc:Strings.Instance}}" />
+          </Panel>
+
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- ============ Overlay: XInput limit message, centered in the whole panel ============ -->
+      <Border Grid.Row="0" Grid.RowSpan="2"
+              Grid.Column="0" Grid.ColumnSpan="3"
+              IsVisible="{Binding IsBeyondXInputLimit}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Margin="0,80,0,0"
+              Background="#CC1E1E1E"
+              CornerRadius="6"
+              Padding="6,8"
+              IsHitTestVisible="False">
+        <TextBlock Foreground="{DynamicResource WarningBrush}"
+                   TextWrapping="Wrap"
+                   TextAlignment="Center"
+                   MaxWidth="320"
+                   FontSize="12"
+                   Text="{Binding Text[msg.xinputLimit], Source={x:Static loc:Strings.Instance}}" />
+      </Border>
+    </Grid>
+
+    <!-- ============ Actions on the left, per-player options on the right ============ -->
+    <!-- Mirrored with the language as well: in Persian the action buttons run from the right edge
+         and the per-player options sit on the left, matching the reading order of the captions.
+         Every group is vertically centred, so buttons, player strip and check boxes share one
+         line. -->
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,6,0,0"
+          FlowDirection="{Binding TextFlowDirection, Source={x:Static loc:Strings.Instance}}">
+      <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                  VerticalAlignment="Center">
+        <Button Classes="accent"
+                Command="{Binding AutoMapCommand}"
+                Content="{Binding Text[action.autoMap], Source={x:Static loc:Strings.Instance}}" />
+        <Button Command="{Binding ClearAllCommand}"
+                Content="{Binding Text[action.clearAll], Source={x:Static loc:Strings.Instance}}" />
+        <Button Command="{Binding RestoreDefaultsCommand}"
+                Content="{Binding Text[action.defaults], Source={x:Static loc:Strings.Instance}}" />
+        <Button Command="{Binding IdentifyCommand}"
+                Content="{Binding Text[action.identify], Source={x:Static loc:Strings.Instance}}" />
+      </StackPanel>
+
+      <ItemsControl Grid.Column="0" Grid.ColumnSpan="3"
+                    ItemsSource="{Binding PlayerSlots}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0,2,0,0">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="1" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="vm:PlayerSlotIndicator">
+            <Button Classes="playerSlot"
+                    Classes.current="{Binding IsCurrent}"
+                    Command="{Binding SelectCommand}">
+              <StackPanel Spacing="1" MinWidth="14">
+                <Border Classes="slotBox"
+                        BorderBrush="{Binding Brush}"
+                        Background="{Binding BoxFill}" />
+                <TextBlock Classes="slotNumber" Text="{Binding Caption}" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12"
+                  VerticalAlignment="Center">
+        <CheckBox IsChecked="{Binding VibrationEnabled}"
+                  VerticalAlignment="Center"
+                  Content="{Binding Text[opt.vibration], Source={x:Static loc:Strings.Instance}}" />
+        <CheckBox IsChecked="{Binding EmulateStickWithDpad}"
+                  VerticalAlignment="Center"
+                  Content="{Binding Text[opt.emulateStick], Source={x:Static loc:Strings.Instance}}" />
+      </StackPanel>
+    </Grid>
+
+  </Grid>
+</UserControl>

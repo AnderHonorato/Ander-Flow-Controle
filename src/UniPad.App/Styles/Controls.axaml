@@ -1,0 +1,468 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Control styling that reproduces the Qt Widgets look: square-ish corners, thin borders,
+    flat fills and a group box whose caption sits on the border line.
+  -->
+
+  <!--
+    Resources local to this sheet. The tab outline colour lives here rather than in the palette
+    because it is deliberately fixed: the boxed selection must read the same in both theme
+    variants. Fluent's accent-coloured selection marker is not overridden but gone entirely - the
+    TabControl and TabItem templates below are rewritten, so the pipe is never created.
+  -->
+  <Styles.Resources>
+    <SolidColorBrush x:Key="TabSelectedOutlineBrush" Color="#FF8C1A" />
+
+    <!--
+      Caption chip height, and the frame offset that must be exactly half of it: the frame's
+      top edge has to land on the chip's vertical centre line, otherwise the caption floats
+      above the border instead of sitting on it. Keep the two in sync.
+    -->
+    <x:Double x:Key="GroupBoxCaptionHeight">16</x:Double>
+    <Thickness x:Key="GroupBoxFrameOffset">0,8,0,0</Thickness>
+
+    <!--
+      Height of the caption's own outline: half the chip plus the one pixel the frame line
+      occupies. Stopping at exactly half leaves a hairline gap between the chip's vertical
+      strokes and the frame line at fractional scalings; the extra pixel makes the two meet.
+      Anything below that row is inside the frame and is left unstroked on purpose.
+    -->
+    <x:Double x:Key="GroupBoxCaptionOutlineHeight">9</x:Double>
+
+    <!-- Rounded on top only: the bottom corners sit inside the frame and are never drawn. -->
+    <CornerRadius x:Key="GroupBoxCaptionCornerRadius">3,3,0,0</CornerRadius>
+  </Styles.Resources>
+
+  <!-- ============ Window ============ -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+  </Style>
+
+  <!-- ============ Text ============ -->
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+  </Style>
+
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.groupLabel">
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+
+  <!--
+    Raw axis and button dumps only line up when every glyph has the same advance width, so the
+    diagnostics monitor uses a fixed-pitch face.
+  -->
+  <Style Selector="TextBlock.mono">
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, DejaVu Sans Mono, monospace" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+  </Style>
+
+  <!-- ============ Button ============ -->
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource StandardCornerRadius}" />
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="White" />
+  </Style>
+
+  <Style Selector="Button:disabled /template/ ContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextDisabledBrush}" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
+  </Style>
+
+  <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="White" />
+  </Style>
+
+  <!-- Bind buttons are dense and monospace-ish so long labels stay readable. -->
+  <Style Selector="Button.bind">
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="MinHeight" Value="22" />
+    <Setter Property="MinWidth" Value="62" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+  </Style>
+
+  <Style Selector="Button.bind.capturing">
+    <Setter Property="BorderBrush" Value="{DynamicResource CaptureBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="Foreground" Value="{DynamicResource CaptureBrush}" />
+  </Style>
+
+  <Style Selector="Button.bind.active">
+    <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
+  </Style>
+
+  <!-- ============ Group box (Qt style: caption sits on the border) ============ -->
+  <!--
+    The overlap between the caption chip and the frame must not depend on the caption's script.
+    The chip therefore has a fixed height and the frame is offset by exactly half of it, so the
+    border line always crosses the chip's middle and the notch reads identically in Latin and
+    Persian. The caption text itself is centre-aligned and free to overflow that height - it is
+    never measured into an 8px slot, so ascenders and descenders are not clipped the way they
+    were before. Do not set ClipToBounds on the chip.
+  -->
+  <Style Selector="HeaderedContentControl.groupBox">
+    <Setter Property="Margin" Value="3" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <!-- Frame: starts half a caption chip down, so the chip sits on its top edge. -->
+          <Border Margin="{DynamicResource GroupBoxFrameOffset}"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{DynamicResource StandardCornerRadius}" />
+
+          <Grid RowDefinitions="Auto,*">
+            <!--
+              Caption chip. Three layers, declared back to front:
+              an opaque fill that erases the stretch of frame line behind the whole chip,
+              an outline that exists only above that line, and the text.
+              The chip's width comes from the text plus its 5px side margins; every layer
+              stretches to it. The Panel is pinned to the chip height so the Auto row stays
+              exactly one chip tall, while the text is free to overflow it - no ClipToBounds
+              anywhere, so Persian ascenders and descenders survive.
+            -->
+            <Panel Grid.Row="0"
+                   Height="{DynamicResource GroupBoxCaptionHeight}"
+                   HorizontalAlignment="Center">
+
+              <Border Background="{DynamicResource PanelBackgroundBrush}"
+                      CornerRadius="{DynamicResource GroupBoxCaptionCornerRadius}" />
+
+              <!-- Top half only: open at the bottom, so nothing is drawn inside the frame. -->
+              <Border Height="{DynamicResource GroupBoxCaptionOutlineHeight}"
+                      VerticalAlignment="Top"
+                      Background="Transparent"
+                      BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="1,1,1,0"
+                      CornerRadius="{DynamicResource GroupBoxCaptionCornerRadius}" />
+
+              <TextBlock Text="{TemplateBinding Header}"
+                         Margin="5,0"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource TextSecondaryBrush}"
+                         FontSize="{DynamicResource FontSizeSmall}" />
+            </Panel>
+
+            <ContentPresenter Grid.Row="1"
+                              Content="{TemplateBinding Content}"
+                              Margin="6,4,6,6" />
+          </Grid>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- ============ ComboBox ============ -->
+  <Style Selector="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource StandardCornerRadius}" />
+    <Setter Property="Padding" Value="6,2" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+  </Style>
+
+  <Style Selector="ComboBox:pointerover /template/ Border#Background">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
+  <!-- ============ TextBox ============ -->
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource StandardCornerRadius}" />
+    <Setter Property="Padding" Value="6,3" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="CaretBrush" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <!-- ============ CheckBox / RadioButton ============ -->
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="Padding" Value="6,0,0,0" />
+  </Style>
+
+  <Style Selector="RadioButton">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="Padding" Value="6,0,0,0" />
+  </Style>
+
+  <!-- ============ Slider (thin Qt-like track) ============ -->
+  <Style Selector="Slider">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="Margin" Value="0" />
+  </Style>
+
+  <Style Selector="Slider /template/ Track#PART_Track">
+    <Setter Property="Height" Value="4" />
+  </Style>
+
+  <Style Selector="Slider /template/ Thumb">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+  </Style>
+
+  <!-- ============ TabControl (flat strip with a boxed selection) ============ -->
+
+  <!--
+    Two offsets cooperate here, and both are deliberate.
+
+    The frame is pulled up three pixels with a top-only margin, so it grows upwards while its
+    bottom edge stays inside the slot - that is what keeps it level with the sidebar and the
+    Advanced and About panels. The rows it gains are hidden behind the opaque tabs, which leaves
+    the orange line flush against them.
+
+    Neither offset may sit on a TabItem. The strip lives in an Auto row, so shrinking a single tab
+    shrinks the row and drags the frame up with it, cancelling the overlap out.
+
+    Render order follows declaration order, so the frame is declared before the strip and the tabs
+    paint over it.
+  -->
+  <Style Selector="TabControl">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="Auto,*">
+
+          <!--
+            Top-only margin: the frame grows three pixels above its slot while its bottom edge
+            stays put, level with the sidebar and the category panels. A bottom margin here would
+            move that edge instead and break the alignment.
+          -->
+          <Border Grid.Row="1"
+                  Margin="0,-3,0,0"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{DynamicResource TabSelectedOutlineBrush}"
+                  BorderThickness="1"
+                  CornerRadius="0,3,3,3">
+            <ContentPresenter Name="PART_SelectedContentHost"
+                              Margin="4"
+                              Content="{TemplateBinding SelectedContent}"
+                              ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+          </Border>
+
+          <!--
+            The whole strip is measured one pixel short, so the Auto row shrinks uniformly and the
+            tabs arrange one pixel into the row below - their last pixel row lands exactly on the
+            frame's top edge.
+
+            The shift has to happen here rather than on a TabItem. A negative margin on a single
+            tab reduces that tab's desired height, the Auto row shrinks with it and the frame
+            follows, which cancels the overlap out entirely.
+
+            Declared after the frame, so the strip paints over it and the grey fill of the active
+            tab lands on top of the orange line.
+          -->
+          <ItemsPresenter Grid.Row="0"
+                          Name="PART_ItemsPresenter"
+                          Margin="0,0,0,-1"
+                          ItemsPanel="{TemplateBinding ItemsPanel}" />
+
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!--
+    Each tab is opaque and covers the frame's top edge wherever the two overlap. An inactive tab then
+    redraws that row in orange itself, through PART_BottomLine; the active tab leaves it alone, so
+    the frame appears to open into the tab. Nothing has to be overlapped or hidden.
+  -->
+  <Style Selector="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="12,5" />
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="Margin" Value="0,0,1,0" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Name="PART_LayoutRoot"
+                  Background="{DynamicResource TabStripBackgroundBrush}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1,1,1,0"
+                  CornerRadius="3,3,0,0">
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              Foreground="{TemplateBinding Foreground}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+          </Border>
+
+          <!-- Continues the frame's top edge across an inactive tab. -->
+          <Border Name="PART_BottomLine"
+                  Height="1"
+                  VerticalAlignment="Bottom"
+                  Background="{DynamicResource TabSelectedOutlineBrush}" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource TabSelectedBackgroundBrush}" />
+  </Style>
+
+  <!-- Selected: orange box, open at the bottom. -->
+  <Style Selector="TabItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabSelectedOutlineBrush}" />
+    <Setter Property="BorderThickness" Value="1,1,1,0" />
+  </Style>
+
+  <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabSelectedOutlineBrush}" />
+  </Style>
+
+  <Style Selector="TabItem:selected /template/ Border#PART_BottomLine">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
+  <!-- ============ ListBox (settings sidebar) ============ -->
+  <!-- Same orange frame and radius as the tab content frame so the two boxes read as a pair. -->
+  <Style Selector="ListBox.sidebar">
+    <Setter Property="Background" Value="{DynamicResource SidebarBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabSelectedOutlineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+
+  <Style Selector="ListBox.sidebar ListBoxItem">
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="MinHeight" Value="22" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.sidebar ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.sidebar ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource TabSelectedOutlineBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="White" />
+  </Style>
+
+  <Style Selector="ListBox.sidebar ListBoxItem:selected:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource TabSelectedOutlineBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="White" />
+  </Style>
+
+  <!-- Frame for the sidebar categories that have no tab strip of their own. -->
+  <Style Selector="Border.categoryFrame">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TabSelectedOutlineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Padding" Value="4" />
+  </Style>
+
+  <!-- ============ Separator / status bar ============ -->
+  <Style Selector="Border.statusBar">
+    <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <Setter Property="Padding" Value="8,4" />
+  </Style>
+
+  <Style Selector="Border.banner">
+    <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource StandardCornerRadius}" />
+    <Setter Property="Padding" Value="10,6" />
+  </Style>
+
+  <!--
+    Device rows (Advanced monitor, Phones list): framed in the colour of the player using them.
+    The assigned state also tints the row's inside with a translucent variant of that colour -
+    PlayerColors.ToFill derives it straight from PlayerBrush - so the connected device stands
+    out at a glance, on the light theme's pale panels most of all.
+  -->
+  <Style Selector="Border.deviceRow">
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </Style>
+  <Style Selector="Border.deviceRow.assigned">
+    <Setter Property="BorderBrush" Value="{ReflectionBinding PlayerBrush}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="Background" Value="{ReflectionBinding PlayerFillBrush}" />
+  </Style>
+
+  <!-- ============ ScrollViewer ============ -->
+  <Style Selector="ScrollViewer">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+</Styles>

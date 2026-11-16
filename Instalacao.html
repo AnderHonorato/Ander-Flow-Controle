@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Ander Flow Controle</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Ander Flow Controle</h1>
+</header>
+<h1 id="ander-flow-controle-010">Ander Flow Controle 0.1.0</h1>
+<p>Edição em português brasileiro por <strong>Ander Flow</strong>,
+baseada no <a
+href="https://github.com/UniPad-app/UniPad/tree/f6756f3416ab6d8250b066bd4e854fce1139c18d">UniPad</a>,
+distribuído sob a licença MIT. Os arquivos LICENSE e
+THIRD-PARTY-NOTICES.md preservam os créditos e as licenças originais.
+Interface de referência para o fluxo de pareamento: PadlinQ.</p>
+<h2 id="instalar-no-windows">Instalar no Windows</h2>
+<ol type="1">
+<li>Extraia o ZIP. Abra a pasta <strong>Windows</strong> e execute
+<strong>AnderFlowControle.exe</strong>. É portátil e já inclui o runtime
+.NET. O Windows precisa ser 10 ou 11, de 64 bits (Intel ou AMD).</li>
+<li>Caso o programa indique que falta o <strong>ViGEmBus</strong>,
+clique em <strong>Instalar</strong> no aviso do aplicativo ou baixe o <a
+href="https://github.com/nefarius/ViGEmBus/releases/tag/v1.22.0">instalador
+oficial do ViGEmBus</a>. Confirme a permissão de administrador para
+instalar o driver e reabra o Ander Flow Controle. Se o instalador pedir,
+reinicie o Windows.</li>
+<li>Se o Firewall do Windows mostrar um aviso, permita o Ander Flow
+Controle em <strong>Redes privadas</strong>. Deixe o jogo fechado
+durante o primeiro pareamento.</li>
+</ol>
+<h2 id="conectar-dois-celulares">Conectar dois celulares</h2>
+<ol type="1">
+<li>Coloque o Android, o iPhone e o PC na mesma rede local. O PC pode
+estar ligado ao roteador por cabo.</li>
+<li>Abra <strong>Celulares</strong> no programa do PC. Escaneie o QR
+Code com cada celular e abra o link na câmera. No Android, use o Chrome.
+No iPhone, use o Safari. Dê nomes diferentes para identificar cada
+aparelho.</li>
+<li>Em <strong>Jogador 1</strong>, escolha o primeiro celular no campo
+<strong>Dispositivo de entrada</strong>. Em <strong>Jogador 2</strong>,
+escolha o outro. Confirme <strong>Conectar controle</strong>, selecione
+<strong>Xbox 360</strong> para os dois e clique em
+<strong>Aplicar</strong>. O layout padrão é mapeado ao selecionar o
+celular.</li>
+<li>Pressione <strong>Win + R</strong>, digite <code>joy.cpl</code> e
+abra as propriedades de cada controle para conferir se cada celular
+aciona o seu. Depois, abra o jogo, entre no modo cooperativo local e
+confirme a entrada do segundo jogador.</li>
+</ol>
+<p>Cada celular controla um jogador. A divisão da imagem no monitor
+depende de o jogo oferecer <strong>tela dividida na versão de
+PC</strong>.</p>
+<h2 id="se-o-qr-code-não-abrir">Se o QR Code não abrir</h2>
+<ul>
+<li>Confira se ambos os celulares estão na rede principal do roteador.
+Redes de convidados podem bloquear a comunicação com o PC.</li>
+<li>Em <strong>Celulares</strong>, selecione o endereço IP da rede
+local, se houver mais de um endereço disponível. Gere um novo QR Code e
+escaneie novamente.</li>
+<li>Se o jogo já estava aberto durante a conexão dos controles, feche e
+abra o jogo.</li>
+<li>No iPhone, o controle pode ser adicionado à tela de início em
+<strong>Compartilhar → Adicionar à Tela de Início</strong>, se o Safari
+oferecer a opção.</li>
+</ul>
+<h2 id="recursos-desta-edição">Recursos desta edição</h2>
+<ul>
+<li>Pareamento local por QR Code com painel de celulares
+conectados.</li>
+<li>Controles virtuais Xbox 360 e DualShock 4, com atribuição individual
+por jogador.</li>
+<li>Controles por toque em modo paisagem, com analógicos, gatilhos e
+ajuste de tamanho, posição e opacidade dos botões.</li>
+<li>Interface em português no Windows e nos celulares. Nomes de
+componentes e mensagens nativas do sistema podem aparecer no idioma
+original.</li>
+<li>A adaptação cobre o controle local. Streaming de vídeo, recorte de
+vídeo por jogador, pareamento via internet e os layouts específicos do
+PadlinQ ficam fora desta edição.</li>
+</ul>
+<h2 id="código-fonte">Código-fonte</h2>
+<p>A pasta <strong>Codigo-fonte</strong> contém os projetos originais
+adaptados, a licença MIT e os avisos de terceiros. No Windows com o SDK
+.NET 9 ou 10, execute <code>build\publish.cmd</code> para gerar o pacote
+portátil. O primeiro build usa internet para baixar as dependências.</p>
+</body>
+</html>
